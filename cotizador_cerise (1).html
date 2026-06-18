@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cerise · Cotizador de Tortas</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FDF5F7;
+  --dark:#1A0A0E;
+  --bordo:#6B1A2A;
+  --bordo2:#8B2338;
+  --rosa:#C4587A;
+  --rosa-light:#F7E0E8;
+  --rosa-pale:#FDF0F4;
+  --cream:#FBF3F5;
+  --gold:#C4A052;
+  --border:#EDD0D8;
+  --white:#FFFFFF;
+  --text:#2A0F18;
+  --muted:#9C6878;
+  --sage:#4A6741;
+  --sage-light:#EAF3DE;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Georgia',serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:150px}
+
+/* HEADER */
+.header{background:linear-gradient(160deg,#1A0A0E 0%,#4A0E1E 50%,#6B1A2A 100%);padding:40px 20px 32px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 0%,rgba(196,88,122,0.2) 0%,transparent 60%),radial-gradient(ellipse at 70% 100%,rgba(107,26,42,0.3) 0%,transparent 60%)}
+.header-cherry{font-size:32px;margin-bottom:8px;display:block;position:relative;z-index:1}
+.header h1{font-size:46px;color:#FDF5F7;font-weight:400;letter-spacing:6px;position:relative;z-index:1;font-style:italic}
+.header-tagline{font-size:15px;color:#D4A0B0;margin-top:6px;letter-spacing:2px;font-family:system-ui,sans-serif;position:relative;z-index:1}
+.header-divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--rosa),transparent);margin:14px auto;position:relative;z-index:1}
+.header-pills{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:1}
+.pill{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px;font-size:13px;color:#D4A0B0;font-family:system-ui,sans-serif}
+
+/* PROGRESS */
+.progress-bar{height:3px;background:var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--bordo),var(--rosa));transition:width 0.4s ease;width:0%}
+
+.container{max-width:480px;margin:0 auto;padding:20px 16px}
+
+/* STEP */
+.step-label{display:flex;align-items:center;gap:10px;margin-bottom:12px;margin-top:26px}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--bordo);color:white;font-size:11px;font-family:system-ui,sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--bordo);font-family:system-ui,sans-serif;font-weight:700}
+
+.card{background:var(--white);border-radius:18px;padding:18px;border:1.5px solid var(--border);box-shadow:0 2px 16px rgba(107,26,42,0.06)}
+
+/* PORCIONES */
+.porciones-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.porcion-btn{border:1.5px solid var(--border);background:var(--cream);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.2s;font-family:system-ui,sans-serif}
+.porcion-btn:active{transform:scale(0.97)}
+.porcion-btn.sel{border-color:var(--bordo);background:linear-gradient(135deg,var(--bordo),var(--bordo2));color:white}
+.porcion-emoji{font-size:24px;margin-bottom:6px}
+.porcion-nombre{font-size:13px;font-weight:600;color:var(--text)}
+.porcion-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.porcion-btn.sel .porcion-nombre,.porcion-btn.sel .porcion-sub{color:white}
+.porcion-btn.sel .porcion-sub{opacity:.75}
+
+/* FORMA */
+.forma-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.forma-btn{border:1.5px solid var(--border);background:var(--cream);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.2s;font-family:system-ui,sans-serif}
+.forma-btn.sel{border-color:var(--rosa);background:var(--rosa);color:white}
+.forma-emoji{font-size:22px;margin-bottom:5px}
+.forma-nombre{font-size:12px;font-weight:600;color:var(--text)}
+.forma-extra{font-size:10px;color:var(--muted);margin-top:2px}
+.forma-btn.sel .forma-nombre,.forma-btn.sel .forma-extra{color:white}
+
+/* BASE */
+.base-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.base-btn{border:1.5px solid var(--border);background:var(--cream);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.2s;font-family:system-ui,sans-serif}
+.base-btn.sel{border-color:var(--dark);background:var(--dark);color:white}
+.base-emoji{font-size:20px;flex-shrink:0}
+.base-nombre{font-size:13px;font-weight:500;color:var(--text)}
+.base-extra{font-size:10px;color:var(--muted)}
+.base-btn.sel .base-nombre,.base-btn.sel .base-extra{color:white}
+
+/* RELLENOS */
+.rellenos-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.relleno-btn{border:1.5px solid var(--border);background:var(--cream);border-radius:12px;padding:11px 12px;cursor:pointer;transition:all 0.2s;font-family:system-ui,sans-serif;position:relative}
+.relleno-btn.sel{border-color:var(--rosa);background:var(--rosa-light)}
+.relleno-btn.sel .rb-nombre{color:var(--bordo);font-weight:700}
+.relleno-btn.has-sub .rb-precio::after{content:' ▾'}
+.rb-nombre{font-size:12px;font-weight:500;color:var(--text)}
+.rb-precio{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* SUB PANEL */
+.sub-panel{display:none;grid-column:1/-1;background:var(--rosa-pale);border:1.5px solid var(--rosa);border-radius:12px;padding:12px;margin-top:0}
+.sub-panel.open{display:block}
+.sub-titulo{font-size:11px;color:var(--bordo);font-family:system-ui,sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.sub-grid{display:flex;flex-wrap:wrap;gap:6px}
+.sub-btn{border:1.5px solid var(--border);background:white;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:system-ui,sans-serif;transition:all 0.15s;color:var(--text)}
+.sub-btn.sel{border-color:var(--bordo);background:var(--bordo);color:white;font-weight:600}
+
+.relleno-nota{font-size:11px;color:var(--muted);margin-top:10px;font-family:system-ui,sans-serif;font-style:italic;text-align:center}
+
+/* DECORACIÓN */
+.deco-lista{display:flex;flex-direction:column;gap:10px}
+.deco-btn{border:1.5px solid var(--border);background:var(--cream);border-radius:14px;padding:16px;cursor:pointer;transition:all 0.2s;font-family:system-ui,sans-serif}
+.deco-btn.sel{border-color:var(--bordo);background:var(--rosa-pale)}
+.deco-btn.sel .db-nombre{color:var(--bordo)}
+.db-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px}
+.db-nombre{font-size:13px;font-weight:700;color:var(--text)}
+.db-precio{font-size:12px;color:var(--rosa);font-weight:700;white-space:nowrap}
+.db-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.db-tag{display:inline-block;background:var(--bordo);color:white;font-size:10px;padding:2px 8px;border-radius:10px;margin-top:6px;font-weight:600}
+
+/* EXTRAS */
+.extras-lista{display:flex;flex-direction:column;gap:8px}
+.extra-btn{border:1.5px solid var(--border);background:var(--cream);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;font-family:system-ui,sans-serif}
+.extra-btn.sel{border-color:var(--rosa);background:var(--rosa-light)}
+.extra-check{width:22px;height:22px;border-radius:7px;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;transition:all 0.2s;color:transparent}
+.extra-btn.sel .extra-check{background:var(--bordo);border-color:var(--bordo);color:white}
+.extra-info{flex:1}
+.extra-nombre{font-size:13px;font-weight:500;color:var(--text)}
+.extra-precio{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* ENVÍO */
+.envio-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.envio-btn{border:1.5px solid var(--border);background:var(--cream);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:all 0.2s;font-family:system-ui,sans-serif}
+.envio-btn.sel{border-color:var(--bordo);background:linear-gradient(135deg,var(--bordo),var(--bordo2));color:white}
+.envio-zona{font-size:11px;font-weight:600;color:var(--text)}
+.envio-precio{font-size:14px;font-weight:700;margin-top:3px;color:var(--bordo)}
+.envio-btn.sel .envio-zona,.envio-btn.sel .envio-precio{color:white}
+
+/* DISEÑO PERSONALIZADO */
+.diseno-card{background:linear-gradient(160deg,var(--dark) 0%,#3A0E1E 100%);border-radius:18px;padding:22px;border:none;position:relative;overflow:hidden}
+.diseno-card::before{content:'🍒';position:absolute;right:16px;top:16px;font-size:36px;opacity:.15}
+.diseno-titulo{font-size:14px;font-weight:600;color:white;margin-bottom:4px;font-style:italic}
+.diseno-sub{font-size:12px;color:#D4A0B0;font-family:system-ui,sans-serif;margin-bottom:16px;line-height:1.6}
+.diseno-textarea{width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 14px;font-size:13px;color:white;font-family:system-ui,sans-serif;resize:none;min-height:90px;outline:none;transition:border 0.2s}
+.diseno-textarea::placeholder{color:rgba(255,255,255,0.3)}
+.diseno-textarea:focus{border-color:rgba(196,88,122,0.6)}
+
+.foto-label{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.06);border:1.5px dashed rgba(196,88,122,0.4);border-radius:12px;padding:14px;cursor:pointer;margin-top:10px;transition:all 0.2s}
+.foto-label:hover{border-color:rgba(196,88,122,0.7);background:rgba(196,88,122,0.08)}
+.foto-label input{display:none}
+.foto-icon{font-size:24px}
+.foto-texto strong{color:white;font-size:13px;font-family:system-ui,sans-serif;display:block}
+.foto-texto span{font-size:13px;color:#D4A0B0;font-family:system-ui,sans-serif}
+.foto-preview{width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-top:12px;display:none}
+.foto-preview.show{display:block}
+.foto-nombre{font-size:12px;color:#D4A0B0;font-family:system-ui,sans-serif;margin-top:8px;display:none;font-style:italic}
+.foto-nombre.show{display:block}
+
+.diseno-nota{background:rgba(196,88,122,0.12);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:12px;color:#D4A0B0;font-family:system-ui,sans-serif;line-height:1.6}
+.diseno-nota strong{color:white}
+
+/* RESULTADO FLOTANTE */
+.resultado-float{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:10px 16px 20px;background:linear-gradient(transparent,rgba(253,245,247,0.97) 25%)}
+.resultado-box{max-width:480px;margin:0 auto;background:linear-gradient(135deg,var(--dark) 0%,#3A0E1E 100%);border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 -4px 30px rgba(107,26,42,0.2),0 4px 20px rgba(0,0,0,0.2)}
+.res-precio-wrap{flex:1}
+.res-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#D4A0B0;font-family:system-ui,sans-serif}
+.res-precio{font-size:30px;color:white;font-weight:300;line-height:1.1;font-style:italic}
+.res-nota{font-size:10px;color:#9C6878;font-family:system-ui,sans-serif;margin-top:2px}
+.btn-wa{background:linear-gradient(135deg,#25D366,#1aab55);border:none;border-radius:14px;padding:14px 18px;color:white;font-size:13px;font-family:system-ui,sans-serif;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;text-decoration:none;transition:opacity 0.15s;flex-shrink:0;box-shadow:0 4px 12px rgba(37,211,102,0.3)}
+.btn-wa:hover{opacity:0.9}
+
+.detalle-wrap{max-width:480px;margin:6px auto 0}
+.detalle-toggle{text-align:center;font-size:11px;color:var(--muted);font-family:system-ui,sans-serif;cursor:pointer;padding:6px}
+.detalle-content{background:white;border-radius:14px;padding:14px;border:1px solid var(--border);margin-top:6px;display:none}
+.detalle-content.open{display:block}
+.det-row{display:flex;justify-content:space-between;font-size:12px;font-family:system-ui,sans-serif;color:var(--muted);padding:4px 0;border-bottom:1px solid #F5E8EC}
+.det-row:last-child{border:none;color:var(--text);font-weight:700;font-size:13px;padding-top:8px}
+
+/* AVISO */
+.aviso{background:var(--rosa-pale);border-radius:14px;padding:14px;text-align:center;font-size:14px;font-family:system-ui,sans-serif;color:var(--muted);line-height:1.7;margin-top:16px;border:1px solid var(--border)}
+.aviso strong{color:var(--bordo)}
+
+/* CHERRY DIVIDER */
+.cherry-divider{text-align:center;font-size:16px;margin:8px 0 4px;opacity:.4;letter-spacing:8px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-cherry">🍒</span>
+  <h1>Cerise</h1>
+  <div class="header-tagline">Pastelería artesanal · Posadas, Misiones</div>
+  <div class="header-divider"></div>
+  <div class="header-pills">
+    <div class="pill">🗓 3 días hábiles de anticipación</div>
+    <div class="pill">💳 Seña para reservar</div>
+    <div class="pill">🚗 Envío a domicilio</div>
+  </div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<div class="container">
+
+  <!-- 1. PORCIONES -->
+  <div class="step-label"><div class="step-num">1</div><div class="step-title">¿Para cuántas personas?</div></div>
+  <div class="card">
+    <div class="porciones-grid" id="g-porciones">
+      <div class="porcion-btn" data-val="8" data-precio="0" onclick="sel(this,'porciones')">
+        <div class="porcion-emoji">🎂</div><div class="porcion-nombre">8 personas</div><div class="porcion-sub">aprox. 1 kg</div>
+      </div>
+      <div class="porcion-btn" data-val="12" data-precio="12000" onclick="sel(this,'porciones')">
+        <div class="porcion-emoji">🎂🎂</div><div class="porcion-nombre">12 personas</div><div class="porcion-sub">aprox. 1,5 kg</div>
+      </div>
+      <div class="porcion-btn" data-val="16" data-precio="22000" onclick="sel(this,'porciones')">
+        <div class="porcion-emoji">🎉</div><div class="porcion-nombre">16 personas</div><div class="porcion-sub">aprox. 2 kg</div>
+      </div>
+      <div class="porcion-btn" data-val="20" data-precio="35000" onclick="sel(this,'porciones')">
+        <div class="porcion-emoji">🎊</div><div class="porcion-nombre">20 personas</div><div class="porcion-sub">aprox. 2,5 kg</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. FORMA -->
+  <div class="step-label"><div class="step-num">2</div><div class="step-title">Forma</div></div>
+  <div class="card">
+    <div class="forma-grid" id="g-forma">
+      <div class="forma-btn" data-val="Redonda" data-precio="0" onclick="sel(this,'forma')">
+        <div class="forma-emoji">⭕</div><div class="forma-nombre">Redonda</div><div class="forma-extra">incluido</div>
+      </div>
+      <div class="forma-btn" data-val="Corazón" data-precio="5000" onclick="sel(this,'forma')">
+        <div class="forma-emoji">❤️</div><div class="forma-nombre">Corazón</div><div class="forma-extra">+$5.000</div>
+      </div>
+      <div class="forma-btn" data-val="Cuadrada" data-precio="5000" onclick="sel(this,'forma')">
+        <div class="forma-emoji">⬜</div><div class="forma-nombre">Cuadrada</div><div class="forma-extra">+$5.000</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. BASE -->
+  <div class="step-label"><div class="step-num">3</div><div class="step-title">Bizcochuelo base</div></div>
+  <div class="card">
+    <div class="base-grid" id="g-base">
+      <div class="base-btn" data-val="Vainilla" data-precio="0" onclick="sel(this,'base')">
+        <div class="base-emoji">🍦</div><div><div class="base-nombre">Vainilla</div><div class="base-extra">incluido</div></div>
+      </div>
+      <div class="base-btn" data-val="Chocolate" data-precio="0" onclick="sel(this,'base')">
+        <div class="base-emoji">🍫</div><div><div class="base-nombre">Chocolate</div><div class="base-extra">incluido</div></div>
+      </div>
+      <div class="base-btn" data-val="Marmolada" data-precio="0" onclick="sel(this,'base')">
+        <div class="base-emoji">🌀</div><div><div class="base-nombre">Marmolada</div><div class="base-extra">incluido</div></div>
+      </div>
+      <div class="base-btn" data-val="Red Velvet" data-precio="3000" onclick="sel(this,'base')">
+        <div class="base-emoji">❤️</div><div><div class="base-nombre">Red Velvet</div><div class="base-extra">+$3.000</div></div>
+      </div>
+      <div class="base-btn" data-val="Carrot Cake" data-precio="3000" onclick="sel(this,'base')">
+        <div class="base-emoji">🥕</div><div><div class="base-nombre">Carrot Cake</div><div class="base-extra">+$3.000</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. RELLENOS -->
+  <div class="step-label"><div class="step-num">4</div><div class="step-title">Rellenos (hasta 2)</div></div>
+  <div class="card">
+    <div class="rellenos-grid" id="g-rellenos">
+      <div class="relleno-btn" data-val="Crema chantilly" data-precio="0" onclick="selRelleno(this)">
+        <div class="rb-nombre">🍦 Crema chantilly</div><div class="rb-precio">incluido</div>
+      </div>
+      <div class="relleno-btn" data-val="Dulce de leche" data-precio="0" onclick="selRelleno(this)">
+        <div class="rb-nombre">🍮 Dulce de leche</div><div class="rb-precio">incluido</div>
+      </div>
+      <div class="relleno-btn has-sub" data-val="Crema pastelera" data-precio="0" onclick="selRelleno(this,'crema-pastelera')">
+        <div class="rb-nombre">🥚 Crema pastelera</div><div class="rb-precio">incluido</div>
+      </div>
+      <div class="sub-panel" id="sub-crema-pastelera">
+        <div class="sub-titulo">Sabor</div>
+        <div class="sub-grid">
+          <div class="sub-btn" data-parent="Crema pastelera" data-val="clásica" onclick="selSub(this,'crema-pastelera')">Clásica</div>
+          <div class="sub-btn" data-parent="Crema pastelera" data-val="de limón" onclick="selSub(this,'crema-pastelera')">De limón</div>
+        </div>
+      </div>
+      <div class="relleno-btn has-sub" data-val="Ganache" data-precio="4000" onclick="selRelleno(this,'ganache')">
+        <div class="rb-nombre">🍫 Ganache</div><div class="rb-precio">+$4.000</div>
+      </div>
+      <div class="sub-panel" id="sub-ganache">
+        <div class="sub-titulo">Tipo de chocolate</div>
+        <div class="sub-grid">
+          <div class="sub-btn" data-parent="Ganache" data-val="blanco" onclick="selSub(this,'ganache')">Blanco</div>
+          <div class="sub-btn" data-parent="Ganache" data-val="semiamargo" onclick="selSub(this,'ganache')">Semiamargo</div>
+          <div class="sub-btn" data-parent="Ganache" data-val="con leche" onclick="selSub(this,'ganache')">Con leche</div>
+        </div>
+      </div>
+      <div class="relleno-btn has-sub" data-val="Mermelada" data-precio="5000" onclick="selRelleno(this,'mermelada')">
+        <div class="rb-nombre">🍓 Mermelada</div><div class="rb-precio">+$5.000</div>
+      </div>
+      <div class="sub-panel" id="sub-mermelada">
+        <div class="sub-titulo">Sabor</div>
+        <div class="sub-grid">
+          <div class="sub-btn" data-parent="Mermelada" data-val="de frutilla" onclick="selSub(this,'mermelada')">Frutilla</div>
+          <div class="sub-btn" data-parent="Mermelada" data-val="de frutos rojos" onclick="selSub(this,'mermelada')">Frutos rojos</div>
+        </div>
+      </div>
+      <div class="relleno-btn" data-val="Cream cheese" data-precio="3000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🧀 Cream cheese</div><div class="rb-precio">+$3.000</div>
+      </div>
+      <div class="relleno-btn" data-val="Quesillo" data-precio="3000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🧀 Quesillo</div><div class="rb-precio">+$3.000</div>
+      </div>
+      <div class="relleno-btn" data-val="DDL con nueces" data-precio="3000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🌰 DDL con nueces</div><div class="rb-precio">+$3.000</div>
+      </div>
+      <div class="relleno-btn" data-val="Crema de café" data-precio="3000" onclick="selRelleno(this)">
+        <div class="rb-nombre">☕ Crema de café</div><div class="rb-precio">+$3.000</div>
+      </div>
+      <div class="relleno-btn" data-val="Crema de maracuyá" data-precio="5000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🌟 Crema maracuyá</div><div class="rb-precio">+$5.000</div>
+      </div>
+      <div class="relleno-btn" data-val="Lemon curd con merengue" data-precio="4000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🍋 Lemon curd</div><div class="rb-precio">+$4.000</div>
+      </div>
+      <div class="relleno-btn" data-val="DDL con chips de chocolate" data-precio="3000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🍫 DDL con chips choco</div><div class="rb-precio">+$3.000</div>
+      </div>
+      <div class="relleno-btn" data-val="Crema con duraznos" data-precio="2000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🍑 Crema con duraznos</div><div class="rb-precio">+$2.000</div>
+      </div>
+      <div class="relleno-btn" data-val="Crema Oreo" data-precio="2000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🍪 Crema Oreo</div><div class="rb-precio">+$2.000</div>
+      </div>
+      <div class="relleno-btn" data-val="Relleno Red Velvet" data-precio="0" onclick="selRelleno(this)">
+        <div class="rb-nombre">❤️ Relleno Red Velvet</div><div class="rb-precio">incluido</div>
+      </div>
+      <div class="relleno-btn" data-val="Relleno Carrot Cake" data-precio="0" onclick="selRelleno(this)">
+        <div class="rb-nombre">🥕 Relleno Carrot Cake</div><div class="rb-precio">incluido</div>
+      </div>
+      <div class="relleno-btn" data-val="Crema Bariloche" data-precio="3000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🏔️ Crema Bariloche</div><div class="rb-precio">+$3.000</div>
+      </div>
+      <div class="relleno-btn" data-val="DDL con merenguitos" data-precio="2000" onclick="selRelleno(this)">
+        <div class="rb-nombre">🍭 DDL con merenguitos</div><div class="rb-precio">+$2.000</div>
+      </div>
+    </div>
+    <div class="relleno-nota">🍒 Podés combinar hasta 2 rellenos</div>
+    <div style="background:#FDF0F4;border-radius:10px;padding:10px 14px;margin-top:10px;font-size:12px;color:#6B1A2A;font-family:system-ui,sans-serif;line-height:1.6;border:1px dashed #EDD0D8">¿No encontrás tu sabor favorito? <strong>Consultanos por WhatsApp</strong> — tenemos más opciones y podemos personalizar tu relleno 🍒</div>
+  </div>
+
+  <!-- 5. DECORACIÓN -->
+  <div class="step-label"><div class="step-num">5</div><div class="step-title">Decoración</div></div>
+  <div class="card">
+    <div class="deco-lista" id="g-deco">
+      <div class="deco-btn" data-val="Simple (chantilly)" data-precio="0" onclick="sel(this,'deco')">
+        <div class="db-header">
+          <div class="db-nombre">🎂 Simple</div>
+          <div class="db-precio">incluido</div>
+        </div>
+        <div class="db-desc">Cobertura de chantilly, borde con manga y mensaje. Clásica y deliciosa.</div>
+      </div>
+      <div class="deco-btn" data-val="Personalizada (ganache con manteca)" data-precio="10000" onclick="sel(this,'deco')">
+        <div class="db-header">
+          <div class="db-nombre">✨ Personalizada</div>
+          <div class="db-precio">+$10.000</div>
+        </div>
+        <div class="db-desc">Ganache de chocolate blanco batido con manteca pomada — sedoso, firme y <strong>resistente a las altas temperaturas</strong> de Misiones. Color a elección, rosetones, moños de cinta, perlas, glitter y estampados (animal print, ombré y más).</div>
+        <div class="db-tag">🌡️ Ideal para el calor misionero</div>
+      </div>
+      <div class="deco-btn" data-val="Muy elaborada (pasta de azúcar / figuras)" data-precio="25000" onclick="sel(this,'deco')">
+        <div class="db-header">
+          <div class="db-nombre">💫 Muy elaborada</div>
+          <div class="db-precio">desde +$25.000</div>
+        </div>
+        <div class="db-desc">Figuras modeladas en pasta de azúcar o fondant, elementos decorativos que van más allá de la crema: personajes, flores esculpidas, estructuras 3D, diseños temáticos complejos. El precio final varía según el diseño — describilo abajo 👇</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. EXTRAS -->
+  <div class="step-label"><div class="step-num">6</div><div class="step-title">Extras opcionales</div></div>
+  <div class="card">
+    <div class="extras-lista" id="g-extras">
+      <div class="extra-btn" data-val="Topper personalizado" data-precio="5000" onclick="toggleExtra(this)">
+        <div class="extra-check">✓</div>
+        <div class="extra-info">
+          <div class="extra-nombre">Topper personalizado</div>
+          <div class="extra-precio">desde $5.000 · el precio varía según el diseño</div>
+        </div>
+      </div>
+      <div class="extra-btn" data-val="Drip de chocolate" data-precio="3000" onclick="toggleExtra(this)">
+        <div class="extra-check">✓</div>
+        <div class="extra-info"><div class="extra-nombre">Drip de chocolate</div><div class="extra-precio">+$3.000</div></div>
+      </div>
+      <div class="extra-btn" data-val="Frutas frescas decorativas" data-precio="4000" onclick="toggleExtra(this)">
+        <div class="extra-check">✓</div>
+        <div class="extra-info"><div class="extra-nombre">Frutas frescas decorativas</div><div class="extra-precio">+$4.000</div></div>
+      </div>
+      <div class="extra-btn" data-val="Flores naturales" data-precio="5000" onclick="toggleExtra(this)">
+        <div class="extra-check">✓</div>
+        <div class="extra-info"><div class="extra-nombre">Flores naturales</div><div class="extra-precio">+$5.000</div></div>
+      </div>
+      <div class="extra-btn" data-val="Mensaje escrito en la torta" data-precio="0" onclick="toggleExtra(this)">
+        <div class="extra-check">✓</div>
+        <div class="extra-info"><div class="extra-nombre">Mensaje escrito en la torta</div><div class="extra-precio">incluido</div></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PASO 8: FECHA -->
+  <div class="step-label"><div class="step-num">8</div><div class="step-title">¿Cuándo lo necesitás?</div></div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--muted);font-family:system-ui,sans-serif;margin-bottom:12px;line-height:1.5">Recordá que necesitamos <strong style="color:var(--bordo)">mínimo 3 días hábiles</strong> de anticipación para preparar tu torta con todo el cuidado que merece 🍒</div>
+    <input type="date" id="fecha-entrega" 
+      style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-size:14px;font-family:system-ui,sans-serif;color:var(--text);background:var(--cream);outline:none;cursor:pointer"
+      oninput="onFechaChange()"
+      onchange="onFechaChange()"
+      min="">
+    <div id="fecha-aviso" style="display:none;margin-top:8px;background:#FEF5EC;border-radius:8px;padding:8px 12px;font-size:12px;color:#633806;font-family:system-ui,sans-serif">
+      ⚠️ Necesitamos al menos 3 días hábiles de anticipación. Por favor elegí otra fecha.
+    </div>
+    <div id="fecha-ok" style="display:none;margin-top:8px;background:var(--sage-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sage);font-family:system-ui,sans-serif">
+      ✓ ¡Fecha disponible! Te esperamos el <strong id="fecha-texto"></strong>
+    </div>
+  </div>
+
+  <!-- 7. ENVÍO -->
+  <div class="step-label"><div class="step-num">9</div><div class="step-title">Zona de entrega</div></div>
+  <div class="card">
+    <div class="envio-grid" id="g-envio">
+      <div class="envio-btn" data-val="Retiro en local" data-precio="0" onclick="sel(this,'envio')">
+        <div class="envio-zona">🏠 Retiro en local</div><div class="envio-precio">Gratis</div>
+      </div>
+      <div id="info-retiro" style="display:none;grid-column:1/-1;background:var(--rosa-pale);border:1.5px solid var(--rosa);border-radius:12px;padding:14px 16px;font-family:system-ui,sans-serif">
+        <div style="font-size:11px;font-weight:700;color:var(--bordo);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📍 Dónde retirás tu torta</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">López Torres 2943</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:10px">Posadas, Misiones</div>
+        <a href="https://maps.google.com/?q=Lopez+Torres+2943,+Posadas,+Misiones,+Argentina" target="_blank"
+          style="display:inline-flex;align-items:center;gap:6px;background:var(--bordo);color:white;text-decoration:none;padding:9px 16px;border-radius:10px;font-size:12px;font-weight:600">
+          📍 Ver en Google Maps
+        </a>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5">Coordinamos el horario de retiro por WhatsApp una vez confirmado el pedido 🍒</div>
+      </div>
+      <div class="envio-btn" data-val="Centro Posadas" data-precio="4000" onclick="sel(this,'envio')">
+        <div class="envio-zona">📍 Centro</div><div class="envio-precio">$4.000</div>
+      </div>
+      <div class="envio-btn" data-val="Villa Cabello" data-precio="5000" onclick="sel(this,'envio')">
+        <div class="envio-zona">📍 Villa Cabello</div><div class="envio-precio">$5.000</div>
+      </div>
+      <div class="envio-btn" data-val="Barrio Sur / Cocomarola" data-precio="5000" onclick="sel(this,'envio')">
+        <div class="envio-zona">📍 B° Sur</div><div class="envio-precio">$5.000</div>
+      </div>
+      <div class="envio-btn" data-val="Miguel Lanús / Garupa" data-precio="6000" onclick="sel(this,'envio')">
+        <div class="envio-zona">📍 Garupa</div><div class="envio-precio">$6.000</div>
+      </div>
+      <div class="envio-btn" data-val="Santa Clara / Villalonga" data-precio="6000" onclick="sel(this,'envio')">
+        <div class="envio-zona">📍 Santa Clara</div><div class="envio-precio">$6.000</div>
+      </div>
+      <div class="envio-btn" data-val="Taembé Guazú" data-precio="7000" onclick="sel(this,'envio')">
+        <div class="envio-zona">📍 Taembé Guazú</div><div class="envio-precio">$7.000</div>
+      </div>
+      <div class="envio-btn" data-val="Otra zona" data-precio="0" onclick="sel(this,'envio')">
+        <div class="envio-zona">❓ Otra zona</div><div class="envio-precio">Consultar</div>
+      </div>
+    </div>
+  </div>
+
+
+    <div id="campo-direccion" style="display:none;margin-top:12px">
+      <div style="font-size:11px;color:var(--muted);font-family:system-ui,sans-serif;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Tu dirección exacta</div>
+      <input type="text" id="direccion-texto" placeholder="Ej: Calle Ejemplo 1234, entre..." 
+        style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;font-family:system-ui,sans-serif;color:var(--text);background:var(--cream);outline:none"
+        oninput="actualizarWA()">
+    </div>
+
+  <!-- 8. DISEÑO PERSONALIZADO -->
+  <div class="step-label"><div class="step-num">🍒</div><div class="step-title">Contanos tu diseño · opcional</div></div>
+  <div class="diseno-card">
+    <div class="diseno-titulo">🎨 ¿Cómo imaginás tu torta?</div>
+    <div class="diseno-sub">Describí el diseño que tenés en mente o subí una foto de referencia. Cerise lo va a leer y te confirma el precio final por WhatsApp.</div>
+    <textarea class="diseno-textarea" id="diseno-texto" placeholder="Ej: quiero una torta rosa con flores y el nombre de mi hija en dorado, con moños en la base..." rows="3" oninput="actualizarWA()"></textarea>
+    <label class="foto-label" id="foto-label">
+      <input type="file" accept="image/*" id="foto-input" onchange="subirFoto(this)">
+      <div class="foto-icon">📸</div>
+      <div class="foto-texto">
+        <strong>Subir foto de referencia</strong>
+        <span>opcional · tocá para elegir una imagen</span>
+      </div>
+    </label>
+    <img id="foto-preview" class="foto-preview" alt="preview"/>
+    <div id="foto-nombre" class="foto-nombre"></div>
+    <div class="diseno-nota">
+      <strong>¿Tenés el diseño en mente pero no sabés el precio?</strong> Completá lo que podés arriba, describí tu diseño acá y Cerise te responde con el precio exacto por WhatsApp 🍒
+    </div>
+  </div>
+
+  <div class="cherry-divider">🍒 🍒 🍒</div>
+
+  <div class="aviso">
+    ⏰ <strong>Pedidos con 3 días hábiles de anticipación</strong><br>
+    Se requiere seña para confirmar el turno.<br>
+    El precio final lo confirma Cerise según disponibilidad y diseño.
+  </div>
+
+</div>
+
+<!-- RESULTADO FLOTANTE -->
+<div class="resultado-float" id="resultado-float" style="display:none">
+  <div class="resultado-box">
+    <div class="res-precio-wrap">
+      <div class="res-label">Precio estimado</div>
+      <div class="res-precio">$<span id="precio-total">0</span></div>
+      <div class="res-nota" id="res-nota">* Cerise confirma el precio final</div>
+    </div>
+    <a id="btn-wa" href="#" class="btn-wa" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Enviar pedido 🍒
+    </a>
+  </div>
+  <div class="detalle-wrap">
+    <div class="detalle-toggle" onclick="toggleDetalle()">Ver desglose ▾</div>
+    <div class="detalle-content" id="detalle-content"></div>
+  </div>
+</div>
+
+<script>
+const BASE = 20000;
+const WA = '5493764555594';
+
+let state = { porciones:null, forma:null, base:null, rellenos:[], subOpciones:{}, deco:null, extras:[], envio:null };
+let fotoBase64 = null;
+let fotoNombre = null;
+
+function sel(el, grupo) {
+  document.querySelectorAll(`#g-${grupo} > *`).forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  state[grupo] = { val: el.dataset.val, precio: parseInt(el.dataset.precio)||0 };
+  if (grupo === 'envio') onEnvioSel(el.dataset.val);
+  calcular();
+}
+
+function selRelleno(el, subId) {
+  if (el.classList.contains('sel')) {
+    el.classList.remove('sel');
+    state.rellenos = state.rellenos.filter(r => r.val !== el.dataset.val);
+    if (subId) { document.getElementById('sub-'+subId)?.classList.remove('open'); delete state.subOpciones[el.dataset.val]; }
+  } else {
+    if (state.rellenos.length >= 2) {
+      const first = document.querySelector('#g-rellenos .relleno-btn.sel');
+      if (first) {
+        const fSub = first.getAttribute('onclick')?.match(/'([^']+)'\)/)?.[1];
+        first.classList.remove('sel');
+        if (fSub) { document.getElementById('sub-'+fSub)?.classList.remove('open'); delete state.subOpciones[first.dataset.val]; }
+        state.rellenos.shift();
+      }
+    }
+    el.classList.add('sel');
+    state.rellenos.push({ val: el.dataset.val, precio: parseInt(el.dataset.precio)||0 });
+    if (subId) document.getElementById('sub-'+subId)?.classList.add('open');
+  }
+  calcular();
+}
+
+function selSub(el, panelId) {
+  document.querySelectorAll(`#sub-${panelId} .sub-btn`).forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  state.subOpciones[el.dataset.parent] = el.dataset.val;
+  calcular();
+}
+
+function toggleExtra(el) {
+  el.classList.toggle('sel');
+  const check = el.querySelector('.extra-check');
+  const nombre = el.dataset.val;
+  if (el.classList.contains('sel')) {
+    check.style.color = 'white';
+    state.extras.push({ val: nombre, precio: parseInt(el.dataset.precio)||0 });
+  } else {
+    check.style.color = 'transparent';
+    state.extras = state.extras.filter(e => e.val !== nombre);
+  }
+  calcular();
+}
+
+// Reset check colors on load
+document.querySelectorAll('.extra-check').forEach(c => c.style.color = 'transparent');
+
+function toggleDetalle() {
+  const c = document.getElementById('detalle-content');
+  const t = document.querySelector('.detalle-toggle');
+  c.classList.toggle('open');
+  t.textContent = c.classList.contains('open') ? 'Ocultar desglose ▴' : 'Ver desglose ▾';
+}
+
+function fmt(n) { return n.toLocaleString('es-AR'); }
+
+function subirFoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  fotoNombre = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    fotoBase64 = e.target.result;
+    const preview = document.getElementById('foto-preview');
+    preview.src = fotoBase64;
+    preview.classList.add('show');
+    const nom = document.getElementById('foto-nombre');
+    nom.textContent = '📎 ' + file.name;
+    nom.classList.add('show');
+    actualizarWA();
+  };
+  reader.readAsDataURL(file);
+}
+
+function actualizarWA() { calcular(); }
+
+function calcular() {
+  const hasSomething = state.porciones || state.base || state.deco || state.rellenos.length;
+  if (!hasSomething) return;
+
+  let total = BASE;
+  let items = [{ nombre:'Torta base · 8 personas · chantilly', precio: BASE }];
+
+  if (state.porciones?.precio) { total += state.porciones.precio; items.push({ nombre:`Tamaño: ${state.porciones.val}`, precio: state.porciones.precio }); }
+  if (state.forma?.precio) { total += state.forma.precio; items.push({ nombre:`Forma: ${state.forma.val}`, precio: state.forma.precio }); }
+  if (state.base?.precio) { total += state.base.precio; items.push({ nombre:`Base: ${state.base.val}`, precio: state.base.precio }); }
+
+  state.rellenos.forEach(r => {
+    const sub = state.subOpciones[r.val];
+    const label = sub ? `${r.val} ${sub}` : r.val;
+    if (r.precio) { total += r.precio; items.push({ nombre:`Relleno: ${label}`, precio: r.precio }); }
+    else items.push({ nombre:`Relleno: ${label}`, precio: 0 });
+  });
+
+  if (state.deco?.precio) { total += state.deco.precio; items.push({ nombre:`Decoración: ${state.deco.val}`, precio: state.deco.precio }); }
+  state.extras.forEach(e => { if (e.precio) { total += e.precio; items.push({ nombre: e.val, precio: e.precio }); } });
+
+  const envioConsultar = state.envio?.val === 'Otra zona';
+  if (state.envio?.precio) { total += state.envio.precio; items.push({ nombre:`Envío: ${state.envio.val}`, precio: state.envio.precio }); }
+
+  const tieneDeco = state.deco?.val?.includes('elaborada');
+  const tieneTopper = state.extras.find(e => e.val === 'Topper personalizado');
+  const tieneDiseno = document.getElementById('diseno-texto')?.value?.trim();
+
+  // progress
+  const campos = ['porciones','forma','base','deco','envio'];
+  const llenos = campos.filter(c => state[c]).length + (state.rellenos.length > 0 ? 1 : 0);
+  document.getElementById('progress').style.width = `${Math.min(100,(llenos/6)*100)}%`;
+
+  // mostrar resultado
+  document.getElementById('resultado-float').style.display = 'block';
+  document.getElementById('precio-total').textContent = envioConsultar ? fmt(total)+' + envío' : fmt(total);
+
+  let notaExtra = [];
+  if (tieneDeco) notaExtra.push('precio de decoración a confirmar');
+  if (tieneTopper) notaExtra.push('topper desde $5.000 según diseño');
+  if (envioConsultar) notaExtra.push('envío a coordinar');
+  document.getElementById('res-nota').textContent = notaExtra.length ? '* ' + notaExtra.join(' · ') : '* Cerise confirma el precio final';
+
+  // detalle
+  let html = items.map(i => `<div class="det-row"><span>${i.nombre}</span><span>${i.precio ? '$'+fmt(i.precio) : 'incluido'}</span></div>`).join('');
+  html += `<div class="det-row"><span>Total estimado</span><span>$${fmt(total)}${envioConsultar?' + envío':''}</span></div>`;
+  document.getElementById('detalle-content').innerHTML = html;
+
+  // armar mensaje WA completo
+  let msg = `Hola Cerise! 🍒 Hice mi cotización:\n\n`;
+  if (state.porciones) msg += `👥 *Personas:* ${state.porciones.val}\n`;
+  if (state.forma) msg += `🔷 *Forma:* ${state.forma.val}\n`;
+  if (state.base) msg += `🍰 *Base:* ${state.base.val}\n`;
+  if (state.rellenos.length) {
+    const rels = state.rellenos.map(r => { const sub = state.subOpciones[r.val]; return sub ? `${r.val} ${sub}` : r.val; });
+    msg += `🍓 *Rellenos:* ${rels.join(' + ')}\n`;
+  }
+  if (state.deco) msg += `✨ *Decoración:* ${state.deco.val}\n`;
+  if (state.extras.length) msg += `➕ *Extras:* ${state.extras.map(e=>e.val).join(', ')}\n`;
+  if (state.envio) msg += `🚗 *Entrega:* ${state.envio.val}\n`;
+  msg += `\n💰 *Estimado: $${fmt(total)}${envioConsultar?' + envío':''}*\n`;
+  if (tieneTopper) msg += `_(Topper desde $5.000 · precio según diseño)_\n`;
+  if (tieneDeco) msg += `_(Decoración muy elaborada · precio a confirmar según diseño)_\n`;
+
+  const diseno = document.getElementById('diseno-texto')?.value?.trim();
+  if (diseno) msg += `\n🎨 *Mi diseño:* ${diseno}\n`;
+  if (fotoNombre) msg += `📸 _Te mando una foto de referencia: ${fotoNombre}_\n`;
+
+  const fecha = document.getElementById('fecha-entrega')?.value;
+  if (fecha) {
+    const d = new Date(fecha + 'T00:00:00');
+    const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    msg += `\n📅 *Fecha de entrega:* ${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}\n`;
+  }
+  const dir = document.getElementById('direccion-texto')?.value?.trim();
+  if (dir) msg += `🏠 *Dirección:* ${dir}\n`;
+  msg += `\n¿Podés confirmarme disponibilidad y precio final? 🍒`;
+
+  document.getElementById('btn-wa').href = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
+}
+
+// FECHA
+document.addEventListener('DOMContentLoaded', function() {
+  const hoy = new Date();
+  const min = new Date();
+  min.setDate(hoy.getDate() + 3);
+  const minStr = min.toISOString().split('T')[0];
+  document.getElementById('fecha-entrega').min = minStr;
+});
+
+function validarFecha(fecha) {
+  if (!fecha) return null;
+  const sel = new Date(fecha + 'T00:00:00');
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  const diff = Math.ceil((sel - hoy) / (1000*60*60*24));
+  return diff >= 3;
+}
+
+function onFechaChange() {
+  const val = document.getElementById('fecha-entrega').value;
+  const aviso = document.getElementById('fecha-aviso');
+  const ok = document.getElementById('fecha-ok');
+  const texto = document.getElementById('fecha-texto');
+  if (!val) { aviso.style.display='none'; ok.style.display='none'; return; }
+  const valida = validarFecha(val);
+  if (valida) {
+    aviso.style.display='none';
+    const d = new Date(val + 'T00:00:00');
+    const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    texto.textContent = dias[d.getDay()] + ' ' + d.getDate() + ' de ' + meses[d.getMonth()];
+    ok.style.display='block';
+  } else {
+    ok.style.display='none';
+    aviso.style.display='block';
+  }
+  actualizarWA();
+}
+
+// mostrar campo dirección cuando eligen zona que no es retiro
+function onEnvioSel(zona) {
+  const campoDir = document.getElementById('campo-direccion');
+  const infoRetiro = document.getElementById('info-retiro');
+  if (zona === 'Retiro en local') {
+    infoRetiro.style.display = 'block';
+    campoDir.style.display = 'none';
+  } else if (zona && zona !== 'Otra zona') {
+    campoDir.style.display = 'block';
+    infoRetiro.style.display = 'none';
+  } else {
+    campoDir.style.display = 'none';
+    infoRetiro.style.display = 'none';
+  }
+}
+
+</script>
+</body>
+</html>
